@@ -9,6 +9,7 @@ const edit = win32.ui.controls.rich_edit; // Import the edit module for EM_SETBK
 const exit = win32.system.threading;
 const messaging = win32.ui.windows_and_messaging;
 const ui_controls = win32.ui.controls;
+const graphics_dwm = win32.graphics.dwm;
 
 // Define UNICODE to true or false
 const UNICODE = false; // Set to true for Unicode (WNDCLASSW), false for ANSI (WNDCLASSA)
@@ -60,14 +61,6 @@ fn initWindow() !void {
     const window_name = "Zig Notepad";
 
     // Load the RichEdit library
-    // const rich_edit_lib = library_loader.LoadLibraryA("msftedit.dll") orelse {
-    //     std.debug.print("Failed to load msftedit.dll\n", .{});
-    //     return error.LoadLibraryFailed;
-    // };
-
-    // _ = rich_edit_lib;
-
-    // _ = library_loader.LoadLibraryA("Msftedit.dll") orelse return error.LoadLibraryFailed;
     _ = library_loader.LoadLibraryA("msftedit.dll") orelse return error.LoadLibraryFailed;
 
     var wc = windows_and_messaging.WNDCLASSA{ // Use WNDCLASSA from the specific module
@@ -107,6 +100,9 @@ fn initWindow() !void {
         return error.CreateWindowFailed;
     };
 
+    // Enable dark mode for the entire application
+    enableDarkMode(window_handle);
+
     const style = windows_and_messaging.WINDOW_STYLE{
         .CHILD = 1, // WS_CHILD
         .VISIBLE = 1, // WS_VISIBLE
@@ -116,9 +112,7 @@ fn initWindow() !void {
 
     edit_handle = windows_and_messaging.CreateWindowExA(
         windows_and_messaging.WS_EX_CLIENTEDGE,
-        // "RichEdit20A", // Use RichEdit20A instead of EDIT
-        "RichEdit50W", // Use RichEdit50A instead of RichEdit20A
-        //edit.RICHEDIT_CLASSA,
+        "RichEdit50W", // Use RichEdit50W instead of RichEdit20A
         "",
         style,
         0,
@@ -141,15 +135,38 @@ fn initWindow() !void {
     _ = gdi.UpdateWindow(window_handle); // Use gdi.UpdateWindow
 }
 
+fn enableDarkMode(hwnd: foundation.HWND) void {
+    const DWMWA_USE_IMMERSIVE_DARK_MODE: graphics_dwm.DWMWINDOWATTRIBUTE = @enumFromInt(20);
+    const TRUE = 1;
+
+    _ = graphics_dwm.DwmSetWindowAttribute(
+        hwnd,
+        DWMWA_USE_IMMERSIVE_DARK_MODE,
+        &TRUE,
+        @sizeOf(@TypeOf(TRUE)),
+    );
+}
+
+// fn applyDarkTheme() void {
+//     // Set background color of the RichEdit control
+//     _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETBKGNDCOLOR, 0, @as(u32, 0x282828));
+
+//     // Set text color using EM_SETCHARFORMAT
+//     var cf: CHARFORMAT2A = undefined;
+//     cf.cbSize = @sizeOf(CHARFORMAT2A);
+//     cf.dwMask = @as(u32, @bitCast(edit.CFM_COLOR)); // Use @bitCast to convert packed struct to u32
+//     cf.crTextColor = 0xE2E2E2; // Light gray text color
+//     _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETCHARFORMAT, edit.SCF_ALL, @as(isize, @intCast(@intFromPtr(&cf))));
+// }
 fn applyDarkTheme() void {
-    // Set background color
-    _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETBKGNDCOLOR, 0, @as(u32, 0x282828));
+    // Set background color of the RichEdit control
+    _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETBKGNDCOLOR, 0, @as(u32, 0x1E1E1E)); // Dark background
 
     // Set text color using EM_SETCHARFORMAT
     var cf: CHARFORMAT2A = undefined;
     cf.cbSize = @sizeOf(CHARFORMAT2A);
     cf.dwMask = @as(u32, @bitCast(edit.CFM_COLOR)); // Use @bitCast to convert packed struct to u32
-    cf.crTextColor = 0xE2E2E2; // Light gray text color
+    cf.crTextColor = 0xD4D4D4; // Light gray text color
     _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETCHARFORMAT, edit.SCF_ALL, @as(isize, @intCast(@intFromPtr(&cf))));
 }
 
@@ -162,6 +179,40 @@ fn messageLoop(hwnd: foundation.HWND) void {
     }
 }
 
+// fn update(hwnd: foundation.HWND, msg: u32, wParam: foundation.WPARAM, lParam: foundation.LPARAM) foundation.LRESULT {
+//     switch (msg) {
+//         windows_and_messaging.WM_DESTROY => {
+//             windows_and_messaging.PostQuitMessage(0);
+//             return 0;
+//         },
+//         windows_and_messaging.WM_SIZE => {
+//             const width = @as(u16, @truncate(@as(usize, @bitCast(lParam)))); // Extract low word (width)
+//             const height = @as(u16, @truncate(@as(usize, @bitCast(lParam)) >> 16)); // Extract high word (height)
+//             _ = windows_and_messaging.MoveWindow(edit_handle, 0, 0, width, height, 1); // Use 1 instead of foundation.TRUE
+//             return 0;
+//         },
+//         windows_and_messaging.WM_DROPFILES => {
+//             const hDrop: ?shell.HDROP = @ptrFromInt(@as(usize, wParam)); // Correctly cast wParam to HDROP
+//             var buff: [1024:0]u8 = undefined; // Ensure the buffer is null-terminated
+//             _ = shell.DragQueryFileA(hDrop, 0, @as([*:0]u8, @ptrCast(&buff)), buff.len); // Pass the buffer correctly
+//             openFile(@as([*:0]const u8, @ptrCast(&buff))) catch |err| {
+//                 std.debug.print("Failed to open file: {}\n", .{err});
+//             };
+//             shell.DragFinish(hDrop);
+//         },
+//         windows_and_messaging.WM_GETDLGCODE => {
+//             return windows_and_messaging.DLGC_WANTALLKEYS | windows_and_messaging.DLGC_WANTARROWS | windows_and_messaging.DLGC_WANTCHARS;
+//         },
+//         windows_and_messaging.WM_KEYDOWN => {
+//             if (wParam == 'A' and (lParam & windows_and_messaging.MK_CONTROL) != 0) { // Check for CTRL+A
+//                 _ = windows_and_messaging.SendMessageA(edit_handle, ui_controls.EM_SETSEL, 0, @as(isize, @intCast(-1))); // Select all text
+//             }
+//             return 0;
+//         },
+//         else => {},
+//     }
+//     return windows_and_messaging.DefWindowProcA(hwnd, msg, wParam, lParam);
+// }
 fn update(hwnd: foundation.HWND, msg: u32, wParam: foundation.WPARAM, lParam: foundation.LPARAM) foundation.LRESULT {
     switch (msg) {
         windows_and_messaging.WM_DESTROY => {
@@ -184,17 +235,41 @@ fn update(hwnd: foundation.HWND, msg: u32, wParam: foundation.WPARAM, lParam: fo
             shell.DragFinish(hDrop);
         },
         windows_and_messaging.WM_GETDLGCODE => {
-            return windows_and_messaging.DLGC_WANTALLKEYS; // Allow ENTER key to be processed by the control
+            return windows_and_messaging.DLGC_WANTALLKEYS | windows_and_messaging.DLGC_WANTARROWS | windows_and_messaging.DLGC_WANTCHARS;
         },
         windows_and_messaging.WM_KEYDOWN => {
             if (wParam == 'A' and (lParam & windows_and_messaging.MK_CONTROL) != 0) { // Check for CTRL+A
                 _ = windows_and_messaging.SendMessageA(edit_handle, ui_controls.EM_SETSEL, 0, @as(isize, @intCast(-1))); // Select all text
             }
-            return 0;
+            return windows_and_messaging.DefWindowProcA(hwnd, msg, wParam, lParam); // Allow default processing
         },
         else => {},
     }
     return windows_and_messaging.DefWindowProcA(hwnd, msg, wParam, lParam);
+}
+
+fn applySyntaxHighlighting() void {
+    // Example: Highlight the word "fn" in blue
+    const keyword = "fn";
+    const keywordColor = 0x569CD6; // Blue color
+
+    var cf: CHARFORMAT2A = undefined;
+    cf.cbSize = @sizeOf(CHARFORMAT2A);
+    cf.dwMask = @as(u32, @bitCast(edit.CFM_COLOR));
+    cf.crTextColor = keywordColor;
+
+    // Find and highlight the keyword
+    const textLength = windows_and_messaging.SendMessageA(edit_handle, edit.EM_GETTEXTLENGTH, 0, 0);
+    var text = try allocator.alloc(u8, textLength + 1);
+    defer allocator.free(text);
+    _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_GETTEXT, textLength + 1, @as(isize, @intCast(@intFromPtr(text.ptr))));
+
+    var pos = std.mem.indexOf(u8, text, keyword);
+    while (pos) |p| {
+        _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETSEL, p, p + keyword.len);
+        _ = windows_and_messaging.SendMessageA(edit_handle, edit.EM_SETCHARFORMAT, edit.SCF_SELECTION, @as(isize, @intCast(@intFromPtr(&cf))));
+        pos = std.mem.indexOf(u8, text[p + keyword.len ..], keyword);
+    }
 }
 
 fn openFile(path: [*:0]const u8) !void {
