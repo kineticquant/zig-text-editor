@@ -1,0 +1,12 @@
+.{
+    .name = "lw-zig-editor",
+    .version = "0.1.0",
+    .paths = .{
+        "", // Include the root directory
+    },
+    .dependencies = .{
+        .zigwin32 = .{
+            .path = "zigwin32", // Reference the local zigwin32 directory
+        },
+    },
+}
