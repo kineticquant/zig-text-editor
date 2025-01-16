@@ -5,10 +5,9 @@
 [![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=fff)](#) Built with Zig 0.12.0 	
 
 
-### Overview
-This application is a simple Zig-based notepad. 
+### Overview & Use Case
+This application in its current state is a Zig-based notepad that's faster than the current built-in Windows notepad. 
 
-### Use Case
 Through monitoring my own network traffic, I've found the default notepad in Windows 11 is calling numerous Microsoft endpoints when launching and saving. This felt wrong to me, thus I wanted to use an alternative product for simple, quick notes. I didn't want to utilize something heavier like Notepad++, Sublime, or a true IDE, thus I decided to start making my own while also trying to learn zig.
 
 This application is being enhanced as I get time and is not a complete product. Right now it simply launches a dark-mode notepad that allows text entry with very basic syntax highlighting. It was created to assist in my learning zig, so I will add to it as I learn more.
