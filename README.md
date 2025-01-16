@@ -6,9 +6,9 @@
 
 
 ### Overview & Use Case
-This application in its current state is a Zig-based notepad that's faster than the current built-in Windows notepad. 
+This application in its current state is a zig-based notepad that's faster than the current built-in Windows Notepad. 
 
-Through monitoring my own network traffic, I've found the default notepad in Windows 11 is calling numerous Microsoft endpoints when launching and saving. This felt wrong to me, thus I wanted to use an alternative product for simple, quick notes. I didn't want to utilize something heavier like Notepad++, Sublime, or a true IDE, thus I decided to start making my own while also trying to learn zig.
+Through monitoring my own network traffic, I've found the default Windows 10/11 Notepad is calling numerous Microsoft endpoints when launching and saving. That additional traffic is unnecessary, so I wanted to use an alternative product for simple, quick notes. I didn't want to utilize something heavier like Notepad++, Sublime, or a true IDE. As a result, I decided to start making my own while also trying to learn zig.
 
 This application is being enhanced as I get time and is not a complete product. Right now it simply launches a dark-mode notepad that allows text entry with very basic syntax highlighting. It was created to assist in my learning zig, so I will add to it as I learn more.
 
