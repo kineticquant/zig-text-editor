@@ -2,8 +2,8 @@
 
 ![In Development](https://img.shields.io/badge/status-In%20Development-yellow)
 
-Built with Zig 0.12.0 	
-[![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=fff)](#)
+[![Zig](https://img.shields.io/badge/Zig-F7A41D?logo=zig&logoColor=fff)](#) Built with Zig 0.12.0 	
+
 
 ### Overview
 This application is a simple Zig-based notepad. 
