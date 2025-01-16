@@ -55,7 +55,7 @@ pub fn main() !void {
 
 fn initWindow() !void {
     const class_name = "ZigNotepad";
-    const window_name = "Shockwave";
+    const window_name = "Notepad";
 
     // Load the RichEdit library
     _ = library_loader.LoadLibraryA("msftedit.dll") orelse return error.LoadLibraryFailed;
